@@ -1,0 +1,134 @@
+plugins {
+    id "java"
+    id "maven-publish"
+    id "signing"
+    id "com.diffplug.spotless" version "6.25.0"
+    id "java-library"
+}
+
+group = "de.tum.cit.ase"
+archivesBaseName = "eos"
+version = "0.0.1"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api "org.openjfx:javafx-base:${javafx_version}:win"
+    api "org.openjfx:javafx-base:${javafx_version}:mac"
+    api "org.openjfx:javafx-base:${javafx_version}:linux"
+
+    api "org.openjfx:javafx-graphics:${javafx_version}:win"
+    api "org.openjfx:javafx-graphics:${javafx_version}:mac"
+    api "org.openjfx:javafx-graphics:${javafx_version}:linux"
+
+    api "org.openjfx:javafx-controls:${javafx_version}:win"
+    api "org.openjfx:javafx-controls:${javafx_version}:mac"
+    api "org.openjfx:javafx-controls:${javafx_version}:linux"
+
+    api "org.openjfx:javafx-swing:${javafx_version}:win"
+    api "org.openjfx:javafx-swing:${javafx_version}:mac"
+    api "org.openjfx:javafx-swing:${javafx_version}:linux"
+
+    api "org.testfx:testfx-core:4.0.16-alpha"
+    api "org.testfx:testfx-junit5:4.0.16-alpha"
+
+    api "org.testfx:openjfx-monocle:17.0.10"
+
+    api "de.tum.in.ase:artemis-java-test-sandbox:1.13.0"
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            pom {
+                name = "Eos"
+                description = "A concise description of my library"
+                url = "https://github.com/ls1intum/Eos"
+
+                licenses {
+                    license {
+                        name = "MIT"
+                        url = "https://opensource.org/licenses/MIT"
+                    }
+                }
+
+                developers {
+                    developer {
+                        name = "Benjamin Schmitz"
+                        email = "benjamin.schmitz@tum.de"
+                        organization = "Technical University of Munich"
+                        organizationUrl = "https://www.tum.de"
+                    }
+                }
+
+                scm {
+                    connection = "scm:git:https://github.com/ls1intum/Eos"
+                    developerConnection = "scm:git:https://github.com/ls1intum/Eos"
+                    url = "https://github.com/ls1intum/Eos"
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "localTest"
+            url = uri("${buildDir}/maven-test")
+        }
+
+        maven {
+            name = "OSSRH"
+            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            credentials {
+                username = System.console()?.readLine("Enter OSSRH Username: ") ?: ""
+                password = System.console()?.readPassword("Enter OSSRH Password: ")?.join("") ?: ""
+            }
+        }
+
+        maven {
+            name = "OSSRH-Snapshots"
+            url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            credentials {
+                username = System.console()?.readLine("Enter OSSRH Username: ") ?: ""
+                password = System.console()?.readPassword("Enter OSSRH Password: ")?.join("") ?: ""
+            }
+        }
+    }
+}
+
+signing {
+    useGpgCmd()
+    sign publishing.publications.mavenJava
+}
+
+// Taken from the Artemis build.gradle (https://github.com/ls1intum/Artemis/blob/327857d0233168b77625451aa2136577a05be4ca/build.gradle)
+spotless {
+    java {
+        target {
+            fileTree(rootDir) {
+                include (
+                        "src/main/java/**/*.java",
+                        "src/test/java/**/*.java",
+                )
+            }
+        }
+        importOrderFile "spotless.importorder"
+        eclipse("4.33").configFile "spotless-style.xml"
+
+        removeUnusedImports()
+        trimTrailingWhitespace()
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

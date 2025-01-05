@@ -1,0 +1,7 @@
+# Taken from Artemis (https://github.com/ls1intum/Artemis/blob/327857d0233168b77625451aa2136577a05be4ca/artemis-spotless.importorder)
+0=java
+1=jakarta
+2=javax
+3=org
+4=com
+5=

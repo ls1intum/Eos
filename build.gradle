@@ -9,7 +9,7 @@ plugins {
 
 group = "de.tum.cit.ase"
 archivesBaseName = "eos"
-version = "0.0.1"
+version = "0.0.3"
 
 repositories {
     mavenCentral()
@@ -161,6 +161,7 @@ jreleaser {
                     url = "https://central.sonatype.com/api/v1/publisher"
                     stagingRepository("build/staging-deploy")
                     applyMavenCentralRules = true
+                    verifyUrl = "https://repo1.maven.org/maven2/{{path}}/{{filename}}"
                 }
             }
         }

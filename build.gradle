@@ -4,6 +4,7 @@ plugins {
     id "signing"
     id "com.diffplug.spotless" version "6.25.0"
     id "java-library"
+    id "org.jreleaser" version "1.16.0"
 }
 
 group = "de.tum.cit.ase"
@@ -106,7 +107,7 @@ publishing {
 
             pom {
                 name = "Eos"
-                description = "A concise description of my library"
+                description = "A testing framework for running JavaFX tests in a secure environment using Ares."
                 url = "https://github.com/ls1intum/Eos"
 
                 licenses {
@@ -136,33 +137,34 @@ publishing {
 
     repositories {
         maven {
-            name = "localTest"
-            url = uri("${buildDir}/maven-test")
-        }
-
-        maven {
-            name = "OSSRH"
-            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-            credentials {
-                username = System.console()?.readLine("Enter OSSRH Username: ") ?: ""
-                password = System.console()?.readPassword("Enter OSSRH Password: ")?.join("") ?: ""
-            }
-        }
-
-        maven {
-            name = "OSSRH-Snapshots"
-            url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-            credentials {
-                username = System.console()?.readLine("Enter OSSRH Username: ") ?: ""
-                password = System.console()?.readPassword("Enter OSSRH Password: ")?.join("") ?: ""
-            }
+            url = layout.buildDirectory.dir('staging-deploy')
         }
     }
 }
 
-signing {
-    useGpgCmd()
-    sign publishing.publications.mavenJava
+jreleaser {
+    project {
+        description = "A testing framework for running JavaFX tests in a secure environment using Ares."
+        copyright = "2025 TUM Applied Education Technologies"
+    }
+
+    signing {
+        active = "ALWAYS"
+        armored = true
+    }
+
+    deploy {
+        maven {
+            mavenCentral {
+                sonatype {
+                    active = "ALWAYS"
+                    url = "https://central.sonatype.com/api/v1/publisher"
+                    stagingRepository("build/staging-deploy")
+                    applyMavenCentralRules = true
+                }
+            }
+        }
+    }
 }
 
 // Taken from the Artemis build.gradle (https://github.com/ls1intum/Artemis/blob/327857d0233168b77625451aa2136577a05be4ca/build.gradle)

@@ -42,7 +42,7 @@ import de.tum.in.test.api.jupiter.Public;
 // Allow all threads and trust all threads
 @TrustedThreads(value = TrustedThreads.TrustScope.ALL_THREADS)
 @AllowThreads
-// TODO: @DisableThreadGroupCheck
+@DisableThreadGroupCheck
 
 // Whitelisted test classes
 @WhitelistClass(JavaFXTest.class)

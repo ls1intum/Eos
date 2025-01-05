@@ -30,6 +30,7 @@ import org.testfx.service.query.NodeQuery;
  * This class provides a common setup for JavaFX tests. It starts the JavaFX application and provides utility methods for
  * testing.
  */
+@TestFXAnnotations
 public abstract class JavaFXTest extends ApplicationTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(JavaFXTest.class);

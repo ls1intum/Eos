@@ -70,9 +70,10 @@ jobs:
         uses: docker/build-push-action@v2
         if: ${{ steps.compute-tag.outputs.result != 'FALSE' }}
         with:
-          context: .
+          context: docker
+          file: docker/Dockerfile
           tags: |
-            ls1tum/artemis-maven-template:${{ steps.compute-tag.outputs.result }}
-            ghcr.io/ls1intum/artemis-maven-docker:${{ steps.compute-tag.outputs.result }}
+            ls1tum/eos:${{ steps.compute-tag.outputs.result }}
+            ghcr.io/ls1intum/eos:${{ steps.compute-tag.outputs.result }}
           platforms: linux/amd64,linux/arm64/v8
           push: ${{ !startsWith(steps.compute-tag.outputs.result, 'pr-') }}

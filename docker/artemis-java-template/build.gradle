@@ -1,6 +1,7 @@
 plugins {
     id 'checkstyle'
     id 'pmd'
+    id 'application'
     id 'com.github.spotbugs' version '6.0.9'
     id 'maven-publish'
     id 'com.teamscale' version '33.1.2'
@@ -19,8 +20,8 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'de.tum.in.ase:artemis-java-test-sandbox:1.13.0'
     testImplementation 'net.bytebuddy:byte-buddy:1.14.13'
+    testImplementation 'de.tum.cit.ase:eos:0.0.3'
 
     implementation 'org.apache.commons:commons-lang3:3.14.0'
 }
@@ -70,7 +71,15 @@ def forbiddenPackageFolders = [ //(2)
                                 "$studentOutputDir/org/junit/",
                                 "$studentOutputDir/org/opentest4j/",
                                 "$studentOutputDir/sun/",
-                                "$studentOutputDir/worker/org/gradle/"
+                                "$studentOutputDir/worker/org/gradle/",
+                                "$studentOutputDir/com/sun/glass/ui/",
+                                "$studentOutputDir/com/sun/javafx/",
+                                "$studentOutputDir/com/sun/prism/",
+                                "$studentOutputDir/java/awt/",
+                                "$studentOutputDir/javafx/",
+                                "$studentOutputDir/org/testfx/",
+                                "$studentOutputDir/sun/awt/",
+                                "$studentOutputDir/com/github/javaparser/",
 ]
 test {
     doFirst { //(1)
@@ -80,6 +89,21 @@ test {
     }
     defaultCharacterEncoding = 'UTF-8'
     useJUnitPlatform()
+
+    systemProperty "glass.platform", "Monocle"
+    systemProperty "monocle.platform", "Headless"
+    systemProperty "prism.order", "sw"
+    systemProperty "prism.text", "t2k"
+}
+
+javafx {
+    version = "17.0.8"
+    modules = ['javafx.base', 'javafx.graphics', 'javafx.controls']
+}
+
+application {
+    mainModule = "ExampleApp"
+    mainClass = "de.tum.cit.ase.ExampleApp"
 }
 
 checkstyle {

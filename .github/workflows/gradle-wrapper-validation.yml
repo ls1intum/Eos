@@ -4,11 +4,11 @@ on:
         branches:
             - main
         paths:
-            - '**/gradle/**'
+            - '../../gradle'
     pull_request:
         branches: [main]
         paths:
-            - '**/gradle/**'
+            - '../../gradle'
 
 jobs:
     validation:

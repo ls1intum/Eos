@@ -1,0 +1,136 @@
+name: Java CI
+
+on:
+  pull_request:
+  merge_group:
+  push:
+    branches:
+      - 'master'
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+*'
+  release:
+    types:
+     - created
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [11, 13, 15, 17]
+    name: Java ${{ matrix.java }} Run
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK ${{ matrix.java }}
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: ${{ matrix.java }}
+    - name: Cache Maven Dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ares-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ares-maven-
+    - name: Test with Maven and JDK ${{ matrix.java }}
+      run: mvn -B clean test
+  test-gradle:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [17]
+    name: Java ${{ matrix.java }} Gradle Run
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK ${{ matrix.java }}
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: ${{ matrix.java }}
+    - name: Cache Maven Dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ares-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ares-maven-
+    - name: Move Gradle build file
+      run: mv ./src/test/resources/build.gradle ./build.gradle
+    - name: Build and Install with Maven and JDK ${{ matrix.java }}
+      run: mvn -B clean install -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true
+    - name: Test with Gradle and JDK ${{ matrix.java }}
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: 7.4
+        arguments: test
+  code-style:
+    runs-on: ubuntu-latest
+    name: Check Code Style
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 15
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'adopt'
+        java-version: 15
+    - name: Cache Maven Dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ares-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ares-maven-
+    - name: Check code style with Maven
+      run: mvn -B spotless:check
+  sonar-scanner:
+    needs: test
+    runs-on: ubuntu-latest
+    name: SonarCloud Java 16
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting
+        fetch-depth: 0
+    - name: Set up JDK 16
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: 17
+    - name: Cache Maven Dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ares-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ares-maven-
+    - name: Run SonarScanner for SonarCloud
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: mvn -B -P coverage clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=artemis-java-test-sandbox -Dsonar.organization=maisikoleni -Dsonar.host.url=https://sonarcloud.io
+  deploy:
+    if: startsWith(github.event.ref, 'refs/tags/')
+    needs: [code-style, test, test-gradle]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: 11
+    - name: Cache Maven Dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ares-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ares-maven-
+    - name: Build and Deploy with Maven
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        mkdir -p ~/.m2
+        echo "<settings><servers><server><id>github</id><username>MaisiKoleni</username><password>${GITHUB_TOKEN}</password></server></servers></settings>" > ~/.m2/settings.xml
+        mvn -B -Dmaven.wagon.http.pool=false clean deploy -P github

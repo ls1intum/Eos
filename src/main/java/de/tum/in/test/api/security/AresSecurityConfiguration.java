@@ -41,12 +41,12 @@ public final class AresSecurityConfiguration {
 
     private final TrustScope threadTrustScope;
 
-    private final boolean isThreadGroupCheckDisabled;
+    private final Set<String> allowedThreadsInThreadGroup;
 
     AresSecurityConfiguration(Optional<Class<?>> testClass, Optional<Method> testMethod, Path executionPath, // NOSONAR
             Collection<String> whitelistedClassNames, Optional<Collection<PathRule>> whitelistedPaths, Collection<PathRule> blacklistedPaths, Set<Integer> allowedLocalPorts,
             OptionalInt allowLocalPortsAbove, Set<Integer> excludedLocalPorts, OptionalInt allowedThreadCount, Set<PackageRule> blacklistedPackages,
-            Set<PackageRule> whitelistedPackages, Set<PackageRule> trustedPackages, TrustScope threadTrustScope, boolean isThreadGroupCheckDisabled) {
+            Set<PackageRule> whitelistedPackages, Set<PackageRule> trustedPackages, TrustScope threadTrustScope, Set<String> allowedThreadsInThreadGroup) {
         this.testClass = Objects.requireNonNull(testClass);
         this.testMethod = Objects.requireNonNull(testMethod);
         this.executionPath = executionPath.toAbsolutePath();
@@ -61,7 +61,7 @@ public final class AresSecurityConfiguration {
         this.whitelistedPackages = Set.copyOf(whitelistedPackages);
         this.trustedPackages = Set.copyOf(trustedPackages);
         this.threadTrustScope = threadTrustScope;
-        this.isThreadGroupCheckDisabled = isThreadGroupCheckDisabled;
+        this.allowedThreadsInThreadGroup = allowedThreadsInThreadGroup;
     }
 
     public Optional<Class<?>> testClass() {
@@ -120,8 +120,8 @@ public final class AresSecurityConfiguration {
         return threadTrustScope;
     }
 
-    public boolean isThreadGroupCheckDisabled() {
-        return isThreadGroupCheckDisabled;
+    public Set<String> getAllowedThreadsInThreadGroup() {
+        return allowedThreadsInThreadGroup;
     }
 
     @Override
@@ -137,13 +137,13 @@ public final class AresSecurityConfiguration {
                 && Objects.equals(allowedThreadCount, other.allowedThreadCount) && Objects.equals(whitelistedPaths, other.whitelistedPaths)
                 && Objects.equals(blacklistedPaths, other.blacklistedPaths) && Objects.equals(blacklistedPackages, other.blacklistedPackages)
                 && Objects.equals(whitelistedPackages, other.whitelistedPackages) && Objects.equals(threadTrustScope, other.threadTrustScope)
-                && Objects.equals(isThreadGroupCheckDisabled, other.isThreadGroupCheckDisabled);
+                && Objects.equals(allowedThreadsInThreadGroup, other.allowedThreadsInThreadGroup);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(executionPath, testClass, testMethod, whitelistedClassNames, allowedThreadCount, whitelistedPaths, blacklistedPaths, blacklistedPackages,
-                whitelistedPackages, threadTrustScope, isThreadGroupCheckDisabled);
+                whitelistedPackages, threadTrustScope, allowedThreadsInThreadGroup);
     }
 
     @Override
@@ -152,9 +152,9 @@ public final class AresSecurityConfiguration {
                 + " testClass=%s, testMethod=%s, whitelistedPaths=%s, blacklistedPaths=%s, allowedLocalPorts=%s," //$NON-NLS-1$
                 + " allowLocalPortsAbove=%s, excludedLocalPorts=%s, allowedThreadCount=%s," //$NON-NLS-1$
                 + " blacklistedPackages=%s, whitelistedPackages=%s, trustedPackages=%s, threadTrustScope=%s," //$NON-NLS-1$
-                + " isThreadGroupCheckDisabled=%b]", //$NON-NLS-1$
+                + " allowedThreadsInThreadGroup=%b]", //$NON-NLS-1$
                 whitelistedClassNames, executionPath, testClass, testMethod, whitelistedPaths, blacklistedPaths, allowedLocalPorts, allowLocalPortsAbove, excludedLocalPorts,
-                allowedThreadCount, blacklistedPackages, whitelistedPackages, trustedPackages, threadTrustScope, isThreadGroupCheckDisabled);
+                allowedThreadCount, blacklistedPackages, whitelistedPackages, trustedPackages, threadTrustScope, allowedThreadsInThreadGroup);
     }
 
     public String shortDesc() {

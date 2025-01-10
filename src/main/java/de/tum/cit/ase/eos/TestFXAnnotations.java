@@ -42,7 +42,7 @@ import de.tum.in.test.api.jupiter.Public;
 // Allow all threads and trust all threads
 @TrustedThreads(value = TrustedThreads.TrustScope.ALL_THREADS)
 @AllowThreads
-@DisableThreadGroupCheck
+@DisableThreadGroupCheckFor({"testfx-async-pool-thread-", "JavaFX-Launcher", "QuantumRenderer-0", "Monocle Timer", "JavaFX Application Thread"})
 
 // Whitelisted test classes
 @WhitelistClass(JavaFXTest.class)

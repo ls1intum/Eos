@@ -1,0 +1,196 @@
+diff --git a/src/main/java/de/tum/in/test/api/DisableThreadGroupCheck.java b/src/main/java/de/tum/in/test/api/DisableThreadGroupCheckFor.java
+similarity index 88%
+rename from src/main/java/de/tum/in/test/api/DisableThreadGroupCheck.java
+rename to src/main/java/de/tum/in/test/api/DisableThreadGroupCheckFor.java
+index 5d47bee..f8c4ca1 100644
+--- a/src/main/java/de/tum/in/test/api/DisableThreadGroupCheck.java
++++ b/src/main/java/de/tum/in/test/api/DisableThreadGroupCheckFor.java
+@@ -22,5 +22,6 @@ import org.apiguardian.api.API;
+ @Documented
+ @Retention(RUNTIME)
+ @Target({ TYPE, ANNOTATION_TYPE })
+-public @interface DisableThreadGroupCheck {
++public @interface DisableThreadGroupCheckFor {
++    String[] value();
+ }
+diff --git a/src/main/java/de/tum/in/test/api/internal/ConfigurationUtils.java b/src/main/java/de/tum/in/test/api/internal/ConfigurationUtils.java
+index 08fc312..e5be34e 100644
+--- a/src/main/java/de/tum/in/test/api/internal/ConfigurationUtils.java
++++ b/src/main/java/de/tum/in/test/api/internal/ConfigurationUtils.java
+@@ -33,7 +33,7 @@ public final class ConfigurationUtils {
+         config.withPackageWhitelist(generatePackageWhiteList(context));
+         config.withTrustedPackages(getTrustedPackages(context));
+         config.withThreadTrustScope(getThreadTrustScope(context));
+-        config.withIsThreadGroupCheckDisabled(isThreadGroupCheckDisabled(context));
++        config.withAllowedThreadsInThreadGroup(getAllowedThreadsInThreadGroup(context));
+         configureAllowLocalPort(config, context);
+         return config.build();
+     }
+@@ -99,7 +99,7 @@ public final class ConfigurationUtils {
+         return TestContextUtils.findAnnotationIn(context, TrustedThreads.class).map(TrustedThreads::value).orElse(TrustScope.MINIMAL);
+     }
+ 
+-    public static boolean isThreadGroupCheckDisabled(TestContext context) {
+-        return TestContextUtils.findAnnotationIn(context, DisableThreadGroupCheck.class).isPresent();
++    public static Set<String> getAllowedThreadsInThreadGroup(TestContext context) {
++        return new HashSet<>(TestContextUtils.findAnnotationIn(context, DisableThreadGroupCheckFor.class).map(DisableThreadGroupCheckFor::value).map(Arrays::asList).orElse(Collections.emptyList()));
+     }
+ }
+diff --git a/src/main/java/de/tum/in/test/api/security/AresSecurityConfiguration.java b/src/main/java/de/tum/in/test/api/security/AresSecurityConfiguration.java
+index 8dbd321..906da25 100644
+--- a/src/main/java/de/tum/in/test/api/security/AresSecurityConfiguration.java
++++ b/src/main/java/de/tum/in/test/api/security/AresSecurityConfiguration.java
+@@ -41,12 +41,12 @@ public final class AresSecurityConfiguration {
+ 
+     private final TrustScope threadTrustScope;
+ 
+-    private final boolean isThreadGroupCheckDisabled;
++    private final Set<String> allowedThreadsInThreadGroup;
+ 
+     AresSecurityConfiguration(Optional<Class<?>> testClass, Optional<Method> testMethod, Path executionPath, // NOSONAR
+             Collection<String> whitelistedClassNames, Optional<Collection<PathRule>> whitelistedPaths, Collection<PathRule> blacklistedPaths, Set<Integer> allowedLocalPorts,
+             OptionalInt allowLocalPortsAbove, Set<Integer> excludedLocalPorts, OptionalInt allowedThreadCount, Set<PackageRule> blacklistedPackages,
+-            Set<PackageRule> whitelistedPackages, Set<PackageRule> trustedPackages, TrustScope threadTrustScope, boolean isThreadGroupCheckDisabled) {
++            Set<PackageRule> whitelistedPackages, Set<PackageRule> trustedPackages, TrustScope threadTrustScope, Set<String> allowedThreadsInThreadGroup) {
+         this.testClass = Objects.requireNonNull(testClass);
+         this.testMethod = Objects.requireNonNull(testMethod);
+         this.executionPath = executionPath.toAbsolutePath();
+@@ -61,7 +61,7 @@ public final class AresSecurityConfiguration {
+         this.whitelistedPackages = Set.copyOf(whitelistedPackages);
+         this.trustedPackages = Set.copyOf(trustedPackages);
+         this.threadTrustScope = threadTrustScope;
+-        this.isThreadGroupCheckDisabled = isThreadGroupCheckDisabled;
++        this.allowedThreadsInThreadGroup = allowedThreadsInThreadGroup;
+     }
+ 
+     public Optional<Class<?>> testClass() {
+@@ -120,8 +120,8 @@ public final class AresSecurityConfiguration {
+         return threadTrustScope;
+     }
+ 
+-    public boolean isThreadGroupCheckDisabled() {
+-        return isThreadGroupCheckDisabled;
++    public Set<String> getAllowedThreadsInThreadGroup() {
++        return allowedThreadsInThreadGroup;
+     }
+ 
+     @Override
+@@ -137,13 +137,13 @@ public final class AresSecurityConfiguration {
+                 && Objects.equals(allowedThreadCount, other.allowedThreadCount) && Objects.equals(whitelistedPaths, other.whitelistedPaths)
+                 && Objects.equals(blacklistedPaths, other.blacklistedPaths) && Objects.equals(blacklistedPackages, other.blacklistedPackages)
+                 && Objects.equals(whitelistedPackages, other.whitelistedPackages) && Objects.equals(threadTrustScope, other.threadTrustScope)
+-                && Objects.equals(isThreadGroupCheckDisabled, other.isThreadGroupCheckDisabled);
++                && Objects.equals(allowedThreadsInThreadGroup, other.allowedThreadsInThreadGroup);
+     }
+ 
+     @Override
+     public int hashCode() {
+         return Objects.hash(executionPath, testClass, testMethod, whitelistedClassNames, allowedThreadCount, whitelistedPaths, blacklistedPaths, blacklistedPackages,
+-                whitelistedPackages, threadTrustScope, isThreadGroupCheckDisabled);
++                whitelistedPackages, threadTrustScope, allowedThreadsInThreadGroup);
+     }
+ 
+     @Override
+@@ -152,9 +152,9 @@ public final class AresSecurityConfiguration {
+                 + " testClass=%s, testMethod=%s, whitelistedPaths=%s, blacklistedPaths=%s, allowedLocalPorts=%s," //$NON-NLS-1$
+                 + " allowLocalPortsAbove=%s, excludedLocalPorts=%s, allowedThreadCount=%s," //$NON-NLS-1$
+                 + " blacklistedPackages=%s, whitelistedPackages=%s, trustedPackages=%s, threadTrustScope=%s," //$NON-NLS-1$
+-                + " isThreadGroupCheckDisabled=%b]", //$NON-NLS-1$
++                + " allowedThreadsInThreadGroup=%b]", //$NON-NLS-1$
+                 whitelistedClassNames, executionPath, testClass, testMethod, whitelistedPaths, blacklistedPaths, allowedLocalPorts, allowLocalPortsAbove, excludedLocalPorts,
+-                allowedThreadCount, blacklistedPackages, whitelistedPackages, trustedPackages, threadTrustScope, isThreadGroupCheckDisabled);
++                allowedThreadCount, blacklistedPackages, whitelistedPackages, trustedPackages, threadTrustScope, allowedThreadsInThreadGroup);
+     }
+ 
+     public String shortDesc() {
+diff --git a/src/main/java/de/tum/in/test/api/security/AresSecurityConfigurationBuilder.java b/src/main/java/de/tum/in/test/api/security/AresSecurityConfigurationBuilder.java
+index aa08887..0c8b3f6 100644
+--- a/src/main/java/de/tum/in/test/api/security/AresSecurityConfigurationBuilder.java
++++ b/src/main/java/de/tum/in/test/api/security/AresSecurityConfigurationBuilder.java
+@@ -76,7 +76,7 @@ public final class AresSecurityConfigurationBuilder {
+ 
+     private TrustScope threadTrustScope;
+ 
+-    private boolean isThreadGroupCheckDisabled;
++    private Set<String> allowedThreadsInThreadGroup;
+ 
+     private AresSecurityConfigurationBuilder() {
+         testClass = Optional.empty();
+@@ -91,7 +91,7 @@ public final class AresSecurityConfigurationBuilder {
+         allowedThreadCount = OptionalInt.empty();
+         trustedPackages = Set.of();
+         threadTrustScope = TrustScope.MINIMAL;
+-        isThreadGroupCheckDisabled = false;
++        allowedThreadsInThreadGroup = Set.of();
+     }
+ 
+     public AresSecurityConfigurationBuilder withPath(Path executionPath) {
+@@ -160,8 +160,8 @@ public final class AresSecurityConfigurationBuilder {
+         return this;
+     }
+ 
+-    public AresSecurityConfigurationBuilder withIsThreadGroupCheckDisabled(boolean isThreadGroupCheckDisabled) {
+-        this.isThreadGroupCheckDisabled = isThreadGroupCheckDisabled;
++    public AresSecurityConfigurationBuilder withAllowedThreadsInThreadGroup(Set allowedThreadsInThreadGroup) {
++        this.allowedThreadsInThreadGroup = allowedThreadsInThreadGroup;
+         return this;
+     }
+ 
+@@ -169,7 +169,7 @@ public final class AresSecurityConfigurationBuilder {
+         validate();
+         return new AresSecurityConfiguration(testClass, testMethod, executionPath, whitelistedClassNames, Optional.ofNullable(whitelistedPaths), blacklistedPaths,
+                 allowedLocalPorts, allowLocalPortsAbove, excludedLocalPorts, allowedThreadCount, blacklistedPackages, whitelistedPackages, trustedPackages, threadTrustScope,
+-                isThreadGroupCheckDisabled);
++                allowedThreadsInThreadGroup);
+     }
+ 
+     private void validate() {
+diff --git a/src/main/java/de/tum/in/test/api/security/ArtemisSecurityManager.java b/src/main/java/de/tum/in/test/api/security/ArtemisSecurityManager.java
+index 569feed..811fe26 100644
+--- a/src/main/java/de/tum/in/test/api/security/ArtemisSecurityManager.java
++++ b/src/main/java/de/tum/in/test/api/security/ArtemisSecurityManager.java
+@@ -624,11 +624,6 @@ public final class ArtemisSecurityManager extends SecurityManager {
+      */
+     @SuppressWarnings("deprecation")
+     private Thread[] checkThreadGroup() {
+-        if (configuration.isThreadGroupCheckDisabled()) {
+-            LOG.debug("Thread group check is disabled"); //$NON-NLS-1$
+-            return new Thread[0];
+-        }
+-
+         blockThreadCreation = true;
+         int originalCount = testThreadGroup.activeCount();
+         if (originalCount == 0)
+@@ -639,6 +634,8 @@ public final class ArtemisSecurityManager extends SecurityManager {
+         for (Thread thread : threads) {
+             if (thread == null)
+                 continue;
++            if (checkIfThreadNameStartsWithAny(thread, configuration.getAllowedThreadsInThreadGroup()))
++                continue;
+             try {
+                 thread.interrupt();
+                 thread.join(500 / originalCount + 1L);
+@@ -650,6 +647,12 @@ public final class ArtemisSecurityManager extends SecurityManager {
+         }
+         if (testThreadGroup.activeCount() == 0)
+             return new Thread[0];
++
++        if (Arrays.stream(threads).filter(Thread::isAlive).allMatch(t -> checkIfThreadNameStartsWithAny(t, configuration.getAllowedThreadsInThreadGroup()))) {
++            LOG.debug("All threads in the test thread group are allowed to run."); //$NON-NLS-1$
++            return new Thread[0];
++        }
++
+         // try forceful shutdown
+         var securityException = new SecurityException(localized("security.error_threads_not_stoppable", Arrays.toString(threads))); //$NON-NLS-1$
+         int alive = threads.length;
+@@ -696,6 +699,10 @@ public final class ArtemisSecurityManager extends SecurityManager {
+         return threads;
+     }
+ 
++    private boolean checkIfThreadNameStartsWithAny(Thread thread, Set<String> allowedThreadStarts) {
++        return allowedThreadStarts.stream().anyMatch(thread.getName()::startsWith);
++    }
++
+     private void checkCommonThreadPool() {
+         var commonPool = ForkJoinPool.commonPool();
+         if (commonPool.isQuiescent())

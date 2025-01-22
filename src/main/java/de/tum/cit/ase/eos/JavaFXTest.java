@@ -56,6 +56,10 @@ public abstract class JavaFXTest extends ApplicationTest {
 
     /**
      * Captures a screenshot of the current window and saves it to a file in the <code>screenshots</code> directory.
+     * <p>
+     * This method is currently supported only on macOS (and other OSs with graphical components) when using the
+     * <code>testLocally</code> task. However, it also functions in terminal-based environments, such as Docker
+     * containers, when using the <code>test</code> task.
      *
      * @param fileName The name of the file to save the screenshot to.
      */

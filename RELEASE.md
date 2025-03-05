@@ -6,5 +6,5 @@ We use [JReleaser](https://jreleaser.org/) to upload Eos to Maven Central. In or
 2. Run `./gradlew clean publish` to build the project and publish it to the local Maven staging repository.
 3. Run `./gradlew jreleaserDeploy` to upload the project to Maven Central.
 4. Commit and push the changes to the repository.
-5. Create a new release on GitHub and upload the artifacts from the `build/distributions` directory.
+5. Create a new release on GitHub and upload the artifacts from the `build/staging-deploy/de/tum/cit/ase/eos/x.x.x` directory.
 6. (This will trigger the CI pipeline to build the Docker container and upload it to Docker Hub.)

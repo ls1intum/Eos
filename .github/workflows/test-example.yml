@@ -44,4 +44,10 @@ jobs:
 
       - name: Run Gradle Tests
         working-directory: example/tests
-        run: ! ./gradlew test
+        run: |
+          if ./gradlew test; then
+            echo "❌ Tests unexpectedly passed!"
+            exit 1
+          else
+            echo "✅ Tests failed as expected."
+          fi

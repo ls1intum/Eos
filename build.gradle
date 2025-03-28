@@ -31,7 +31,7 @@ dependencies {
     api 'org.junit.vintage:junit-vintage-engine'
     api 'org.junit.platform:junit-platform-testkit'
 
-    api 'org.apache.commons:commons-lang3:3.12.0'
+    api 'org.apache.commons:commons-lang3:3.17.0'
 
     api "org.openjfx:javafx-base:${javafx_version}:win"
     api "org.openjfx:javafx-base:${javafx_version}:mac"

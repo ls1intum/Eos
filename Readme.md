@@ -78,8 +78,7 @@ If you prefer to set up your project independently, the following is a brief, no
 testImplementation 'de.tum.cit.ase:eos:0.0.5'
 ```
 
-2. Configure withing the test task in `build.gradle`:
-
+2. Configure within the test task in `build.gradle`:
 ```groovy
     systemProperty "glass.platform", "Monocle"
     systemProperty "monocle.platform", "Headless"

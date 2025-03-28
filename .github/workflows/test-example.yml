@@ -1,4 +1,4 @@
-name: Build and Push
+name: Test Example
 
 on:
   pull_request:
@@ -16,15 +16,14 @@ jobs:
     name: Run Tests of Example Application
     runs-on: ubuntu-latest
     steps:
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-        - name: Copy solution to tests/assignment
-          run: |
-            mkdir -p example/tests/assignment
-            cp -r example/solution/* example/tests/assignment/
+      - name: Copy solution to tests/assignment
+        run: |
+          mkdir -p example/tests/assignment
+          cp -r example/solution/* example/tests/assignment/
 
-        - name: Run Gradle Tests
-          working-directory: example/tests/assignment
-          run: ./gradlew test
+      - name: Run Gradle Tests
+        working-directory: example/tests/assignment
+        run: ./gradlew test

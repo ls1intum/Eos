@@ -17,21 +17,21 @@ repositories {
 
 dependencies {
     // Ares
-    api 'ch.qos.logback:logback-classic:1.5.3'
-    api 'org.hamcrest:hamcrest:2.2'
-    api 'org.assertj:assertj-core:3.25.3'
-    api 'org.json:json:20240303'
-    api 'info.debatty:java-string-similarity:2.0.0'
-    api 'com.github.javaparser:javaparser-core:3.25.9'
+    api "ch.qos.logback:logback-classic:1.5.3"
+    api "org.hamcrest:hamcrest:2.2"
+    api "org.assertj:assertj-core:3.25.3"
+    api "org.json:json:20240303"
+    api "info.debatty:java-string-similarity:2.0.0"
+    api "com.github.javaparser:javaparser-core:3.25.9"
     api platform("org.junit:junit-bom:5.10.2")
-    api 'org.junit.jupiter:junit-jupiter-api'
-    api 'org.junit.platform:junit-platform-launcher'
-    api 'org.junit.jupiter:junit-jupiter-engine'
-    api 'org.junit.jupiter:junit-jupiter-params'
-    api 'org.junit.vintage:junit-vintage-engine'
-    api 'org.junit.platform:junit-platform-testkit'
+    api "org.junit.jupiter:junit-jupiter-api"
+    api "org.junit.platform:junit-platform-launcher"
+    api "org.junit.jupiter:junit-jupiter-engine"
+    api "org.junit.jupiter:junit-jupiter-params"
+    api "org.junit.vintage:junit-vintage-engine"
+    api "org.junit.platform:junit-platform-testkit"
 
-    api 'org.apache.commons:commons-lang3:3.17.0'
+    api "org.apache.commons:commons-lang3:3.17.0"
 
     api "org.openjfx:javafx-base:${javafx_version}:win"
     api "org.openjfx:javafx-base:${javafx_version}:mac"
@@ -65,24 +65,24 @@ java {
 }
 
 def forbiddenPaths = [
-  "build/classes/java/main/ch/qos/logback/",
-  "build/classes/java/main/com/intellij/",
-  "build/classes/java/main/com/sun/",
-  "build/classes/java/main/java/",
-  "build/classes/java/main/javax/",
-  "build/classes/java/main/jdk/",
-  "build/classes/java/main/net/jqwik/",
-  "build/classes/java/main/org/apache/",
-  "build/classes/java/main/org/assertj/",
-  "build/classes/java/main/org/eclipse/",
-  "build/classes/java/main/org/jacoco/",
-  "build/classes/java/main/org/json/",
-  "build/classes/java/main/org/junit/",
-  "build/classes/java/main/org/opentest4j/",
-  "build/classes/java/main/sun/",
-  "build/classes/java/main/com/github/javaparser/",
-  "build/classes/java/main/org/gradle/",
-  "build/classes/java/main/worker/org/gradle/"
+    "build/classes/java/main/ch/qos/logback/",
+    "build/classes/java/main/com/intellij/",
+    "build/classes/java/main/com/sun/",
+    "build/classes/java/main/java/",
+    "build/classes/java/main/javax/",
+    "build/classes/java/main/jdk/",
+    "build/classes/java/main/net/jqwik/",
+    "build/classes/java/main/org/apache/",
+    "build/classes/java/main/org/assertj/",
+    "build/classes/java/main/org/eclipse/",
+    "build/classes/java/main/org/jacoco/",
+    "build/classes/java/main/org/json/",
+    "build/classes/java/main/org/junit/",
+    "build/classes/java/main/org/opentest4j/",
+    "build/classes/java/main/sun/",
+    "build/classes/java/main/com/github/javaparser/",
+    "build/classes/java/main/org/gradle/",
+    "build/classes/java/main/worker/org/gradle/"
 ]
 
 tasks.register("enforceNoStudentCode") {
@@ -137,7 +137,7 @@ publishing {
 
     repositories {
         maven {
-            url = layout.buildDirectory.dir('staging-deploy')
+            url = layout.buildDirectory.dir("staging-deploy")
         }
     }
 }
@@ -175,7 +175,7 @@ spotless {
             fileTree(rootDir) {
                 include (
                         "src/main/java/de/tum/cit/ase/eos/*.java",
-                )
+                        )
             }
         }
         importOrderFile "spotless.importorder"
@@ -183,6 +183,11 @@ spotless {
 
         removeUnusedImports()
         trimTrailingWhitespace()
+    }
+
+    groovyGradle {
+        target "*.gradle"
+        greclipse().configFile("greclipse.properties")
     }
 }
 

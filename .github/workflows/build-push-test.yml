@@ -24,7 +24,7 @@ jobs:
     name: Run Tests for Solution
     needs: build
     runs-on: ubuntu-latest
-    container: ls1tum/eos:0.0.5
+    container: ghcr.io/ls1intum/eos:${{ needs.build.outputs.image_tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -42,7 +42,7 @@ jobs:
     name: Run Tests for Template
     needs: build
     runs-on: ubuntu-latest
-    container: ls1tum/eos:0.0.5
+    container: ghcr.io/ls1intum/eos:${{ needs.build.outputs.image_tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

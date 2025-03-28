@@ -16,10 +16,12 @@ jobs:
     name: Build and Push the Docker Images
     uses: ls1intum/.github/.github/workflows/build-and-push-docker-image.yml@main
     with:
-      ref: ${{ github.event.release.tag_name }}
+      ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
       docker-file: docker/Dockerfile
       docker-context: docker
       image-name: ls1intum/eos
+      tags: |
+        type=ref,event=tag
 
   test-solution:
     name: Run Tests for Solution

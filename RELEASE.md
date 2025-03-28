@@ -1,5 +1,6 @@
 # How to release Eos?
 
+
 We use [JReleaser](https://jreleaser.org/) to upload Eos to Maven Central. In order to so, you have to set up a `~/.jreleaser/config.toeml` file according to [the documentation](https://jreleaser.org/guide/latest/examples/maven/maven-central.html#_gradle).
 
 1. Update the version in `build.gradle`, `README.md` and in the `build.gradle` of the example project / project for building the docker container.

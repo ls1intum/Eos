@@ -174,8 +174,7 @@ spotless {
         target {
             fileTree(rootDir) {
                 include (
-                        "src/main/java/**/*.java",
-                        "src/test/java/**/*.java",
+                        "src/main/java/de/tum/cit/ase/eos/*.java",
                 )
             }
         }

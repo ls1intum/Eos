@@ -1,4 +1,4 @@
-# **Eos – Headless JavaFX Testing Framework for Education**
+# Eos – Headless JavaFX Testing Framework for Education
 
 ## Overview
 

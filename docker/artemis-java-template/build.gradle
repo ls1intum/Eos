@@ -21,7 +21,7 @@ repositories {
 
 dependencies {
     testImplementation 'net.bytebuddy:byte-buddy:1.15.11'
-    testImplementation 'de.tum.cit.ase:eos:0.0.5'
+    testImplementation 'de.tum.cit.ase:eos:1.0.0-rc0'
 
     implementation 'org.apache.commons:commons-lang3:3.17.0'
 }

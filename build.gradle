@@ -9,7 +9,7 @@ plugins {
 
 group = "de.tum.cit.ase"
 archivesBaseName = "eos"
-version = "0.0.5"
+version = "1.0.0-rc0"
 
 repositories {
     mavenCentral()

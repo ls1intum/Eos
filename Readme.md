@@ -64,7 +64,7 @@ An example exercise is provided in the `example` directory:
 - `solution/`: A reference implementation of the correct solution.
 - `tests/`: Contains pre-configured, Eos-compatible tests ready for auto-grading and CI execution.
 
-Use the following Docker image in your auto-grader: `ghcr.io/ls1intum/eos:0.0.5`
+Use the following Docker image in your auto-grader: `ghcr.io/ls1intum/eos:1.0.0-rc0`
 
 ### Manual Setup
 
@@ -75,7 +75,7 @@ If you prefer to set up your project independently, the following is a brief, no
 1. Add the dependency:
 
 ```groovy
-testImplementation 'de.tum.cit.ase:eos:0.0.5'
+testImplementation 'de.tum.cit.ase:eos:1.0.0-rc0'
 ```
 
 2. Configure within the test task in `build.gradle`:
@@ -118,4 +118,4 @@ Alternatively, the reproducible docker-based execution can be used to avoid thes
 > ⚠️ Remember to remove or comment out OS-specific annotations before pushing to your remote repository. CI pipelines should only run with the minimal required permissions.
 
 #### Docker-Based Execution
-For consistent and reproducible test execution, you can run tests using Docker: `docker run -it --rm -v ./:/app -w /app ghcr.io/ls1intum/eos:0.0.5 ./gradlew clean test`
+For consistent and reproducible test execution, you can run tests using Docker: `docker run -it --rm -v ./:/app -w /app ghcr.io/ls1intum/eos:1.0.0-rc0 ./gradlew clean test`

@@ -18,6 +18,7 @@ jobs:
     with:
       docker-file: docker/Dockerfile
       docker-context: docker
+      image-name: ls1intum/eos
 
   test-solution:
     name: Run Tests for Solution

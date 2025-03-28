@@ -1,0 +1,115 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+sourceCompatibility = 17
+version = '1.0.0'
+compileJava.options.encoding = 'UTF-8'
+compileTestJava.options.encoding = 'UTF-8'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+ext {
+    junitJupiterVersion = '5.10.2'
+}
+
+dependencies {
+    testImplementation 'de.tum.cit.ase:eos:0.0.5'
+
+    implementation 'org.apache.commons:commons-lang3:3.17.0'
+}
+
+javafx {
+    version = "17.0.8"
+    modules = ['javafx.base', 'javafx.graphics', 'javafx.controls']
+}
+
+def assignmentSrcDir = "assignment/src"
+def studentOutputDir = sourceSets.main.java.destinationDirectory.get()
+
+sourceSets {
+    test {
+        java {
+            srcDir 'test'
+        }
+        resources {
+            srcDir 'test'
+        }
+    }
+
+
+    main {
+        java {
+            srcDirs = [assignmentSrcDir]
+        }
+        resources {
+            srcDirs = []
+        }
+    }
+}
+
+application {
+    mainModule = "ExampleApp"
+    mainClass = "de.tum.cit.ase.javafx.exercise.ExampleApp"
+}
+
+def forbiddenPackageFolders = [
+        "$studentOutputDir/ch/qos/logback/",
+        "$studentOutputDir/com/github/javaparser/",
+        "$studentOutputDir/com/intellij/",
+        "$studentOutputDir/com/sun/",
+        "$studentOutputDir/de/tum/in/test/api/",
+        "$studentOutputDir/java/",
+        "$studentOutputDir/javax/",
+        "$studentOutputDir/jdk/",
+        "$studentOutputDir/net/jqwik/",
+        "$studentOutputDir/org/apache/",
+        "$studentOutputDir/org/assertj/",
+        "$studentOutputDir/org/eclipse/",
+        "$studentOutputDir/org/gradle/",
+        "$studentOutputDir/org/jacoco/",
+        "$studentOutputDir/org/json/",
+        "$studentOutputDir/org/junit/",
+        "$studentOutputDir/org/opentest4j/",
+        "$studentOutputDir/sun/",
+        "$studentOutputDir/worker/org/gradle/",
+        "$studentOutputDir/com/sun/glass/ui/",
+        "$studentOutputDir/com/sun/javafx/",
+        "$studentOutputDir/com/sun/prism/",
+        "$studentOutputDir/java/awt/",
+        "$studentOutputDir/javafx/",
+        "$studentOutputDir/org/testfx/",
+        "$studentOutputDir/sun/awt/"
+]
+
+test {
+    doFirst {
+        for (String packageFolder in forbiddenPackageFolders) {
+            assert !file(packageFolder).exists(): "$packageFolder must not exist within the submission."
+        }
+    }
+    defaultCharacterEncoding = 'UTF-8'
+    testLogging.showStandardStreams = true
+    useJUnitPlatform()
+
+    systemProperty "glass.platform", "Monocle"
+    systemProperty "monocle.platform", "Headless"
+    systemProperty "prism.order", "sw"
+    systemProperty "prism.text", "t2k"
+}
+
+tasks.register('testLocally', Test) {
+    doFirst {
+        for (String packageFolder in forbiddenPackageFolders) {
+            assert !file(packageFolder).exists(): "$packageFolder must not exist within the submission."
+        }
+    }
+    defaultCharacterEncoding = 'UTF-8'
+    testLogging.showStandardStreams = true
+    useJUnitPlatform()
+}

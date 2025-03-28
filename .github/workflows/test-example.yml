@@ -1,0 +1,30 @@
+name: Build and Push
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - release/*
+    tags: "*"
+  release:
+    types:
+      - created
+
+jobs:
+  test:
+    name: Run Tests of Example Application
+    runs-on: ubuntu-latest
+    steps:
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: Copy solution to tests/assignment
+          run: |
+            mkdir -p example/tests/assignment
+            cp -r example/solution/* example/tests/assignment/
+
+        - name: Run Gradle Tests
+          working-directory: example/tests/assignment
+          run: ./gradlew test

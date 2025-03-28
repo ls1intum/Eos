@@ -1,4 +1,4 @@
-name: Build and Push
+name: Build, Push, and Test
 
 on:
   pull_request:
@@ -77,3 +77,45 @@ jobs:
             ghcr.io/ls1intum/eos:${{ steps.compute-tag.outputs.result }}
           platforms: linux/amd64,linux/arm64/v8
           push: ${{ !startsWith(steps.compute-tag.outputs.result, 'pr-') }}
+
+  test-solution:
+    name: Run Tests for Solution
+    needs: buildx
+    runs-on: ubuntu-latest
+    container: ls1tum/eos:0.0.5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Copy solution to example/tests/assignment
+        run: |
+          mkdir -p example/tests/assignment
+          cp -r example/solution/* example/tests/assignment/
+
+      - name: Run Gradle Tests
+        working-directory: example/tests
+        run: ./gradlew test
+
+  test-template:
+    name: Run Tests for Template
+    needs: buildx
+    runs-on: ubuntu-latest
+    container: ls1tum/eos:0.0.5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Copy template to example/tests/assignment
+        run: |
+          mkdir -p example/tests/assignment
+          cp -r example/template/* example/tests/assignment/
+
+      - name: Run Gradle Tests
+        working-directory: example/tests
+        run: |
+          if ./gradlew test; then
+            echo "❌ Tests unexpectedly passed!"
+            exit 1
+          else
+            echo "✅ Tests failed as expected."
+          fi

@@ -16,8 +16,8 @@ jobs:
     name: Build and Push the Docker Images
     uses: ls1intum/.github/.github/workflows/build-and-push-docker-image.yml@main
     with:
-      dockerfile: docker/Dockerfile
-      context: docker
+      docker-file: docker/Dockerfile
+      docker-context: docker
 
   test-solution:
     name: Run Tests for Solution

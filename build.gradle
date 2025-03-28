@@ -107,7 +107,7 @@ publishing {
 
             pom {
                 name = "Eos"
-                description = "A testing framework for running JavaFX tests in a secure environment using Ares."
+                description = "Headless JavaFX Testing Framework for Education"
                 url = "https://github.com/ls1intum/Eos"
 
                 licenses {
@@ -121,8 +121,8 @@ publishing {
                     developer {
                         name = "Benjamin Schmitz"
                         email = "benjamin.schmitz@tum.de"
-                        organization = "Technical University of Munich"
-                        organizationUrl = "https://www.tum.de"
+                        organization = "TUM Applied Education Technologies"
+                        organizationUrl = "https://aet.cit.tum.de"
                     }
                 }
 
@@ -144,7 +144,7 @@ publishing {
 
 jreleaser {
     project {
-        description = "A testing framework for running JavaFX tests in a secure environment using Ares."
+        description = "Headless JavaFX Testing Framework for Education"
         copyright = "2025 TUM Applied Education Technologies"
     }
 

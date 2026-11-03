@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use Eos in your work, please cite it using the metadata from this file."
+title: "Eos"
+abstract: "Eos is a headless testing framework for the automated testing of JavaFX-based GUI applications in educational environments."
+type: software
+license: MIT
+version: "2.0.0"
+repository-code: "https://github.com/ls1intum/Eos"
+keywords:
+  - java
+  - javafx
+  - gui-testing
+  - headless
+  - education
+  - automated-assessment
+authors:
+  - family-names: Schmitz
+    given-names: Benjamin
+    email: benjamin.schmitz@tum.de
+    affiliation: "Technical University of Munich"
+preferred-citation:
+  type: conference-paper
+  title: "Dynamic Testing of GUI Exercises in Headless Environments"
+  authors:
+    - family-names: Schmitz
+      given-names: Benjamin
+      affiliation: "Technical University of Munich"
+  collection-title: "2025 40th IEEE/ACM International Conference on Automated Software Engineering (ASE)"
+  conference:
+    name: "40th IEEE/ACM International Conference on Automated Software Engineering (ASE)"
+  publisher:
+    name: "IEEE"
+  year: 2025
+  start: 4131
+  end: 4133
+  doi: "10.1109/ASE63991.2025.00393"

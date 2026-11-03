@@ -1,58 +1,43 @@
 plugins {
-    id "java"
+    id "java-library"
     id "maven-publish"
     id "signing"
-    id "com.diffplug.spotless" version "6.25.0"
-    id "java-library"
-    id "org.jreleaser" version "1.16.0"
+    id "com.diffplug.spotless" version "8.11.0"
+    id "org.jreleaser" version "1.27.0"
+    id "org.openjfx.javafxplugin" version "0.1.0"
 }
 
-group = "de.tum.cit.ase"
-archivesBaseName = "eos"
-version = "1.0.0"
+group = "de.tum.cit.aet"
+version = "2.0.0"
+
+base {
+    archivesName = "eos"
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    // Ares
-    api "ch.qos.logback:logback-classic:1.5.3"
-    api "org.hamcrest:hamcrest:2.2"
-    api "org.assertj:assertj-core:3.25.3"
-    api "org.json:json:20240303"
-    api "info.debatty:java-string-similarity:2.0.0"
-    api "com.github.javaparser:javaparser-core:3.25.9"
-    api platform("org.junit:junit-bom:5.10.2")
-    api "org.junit.jupiter:junit-jupiter-api"
-    api "org.junit.platform:junit-platform-launcher"
-    api "org.junit.jupiter:junit-jupiter-engine"
-    api "org.junit.jupiter:junit-jupiter-params"
-    api "org.junit.vintage:junit-vintage-engine"
-    api "org.junit.platform:junit-platform-testkit"
+    // Ares 2 (https://github.com/ls1intum/Ares2) brings JUnit Jupiter, AssertJ and the sandbox annotations
+    api "de.tum.cit.ase:ares:${ares_version}"
 
-    api "org.apache.commons:commons-lang3:3.17.0"
+    api "org.testfx:testfx-core:${testfx_version}"
+    api "org.testfx:testfx-junit5:${testfx_version}"
+    api "org.hamcrest:hamcrest:3.0"
+}
 
-    api "org.openjfx:javafx-base:${javafx_version}:win"
-    api "org.openjfx:javafx-base:${javafx_version}:mac"
-    api "org.openjfx:javafx-base:${javafx_version}:linux"
-
-    api "org.openjfx:javafx-graphics:${javafx_version}:win"
-    api "org.openjfx:javafx-graphics:${javafx_version}:mac"
-    api "org.openjfx:javafx-graphics:${javafx_version}:linux"
-
-    api "org.openjfx:javafx-controls:${javafx_version}:win"
-    api "org.openjfx:javafx-controls:${javafx_version}:mac"
-    api "org.openjfx:javafx-controls:${javafx_version}:linux"
-
-    api "org.openjfx:javafx-swing:${javafx_version}:win"
-    api "org.openjfx:javafx-swing:${javafx_version}:mac"
-    api "org.openjfx:javafx-swing:${javafx_version}:linux"
-
-    api "org.testfx:testfx-core:4.0.16-alpha"
-    api "org.testfx:testfx-junit5:4.0.16-alpha"
-
-    api "org.testfx:openjfx-monocle:17.0.10"
+// JavaFX is platform specific. It is therefore not published as a dependency of Eos, the exercise
+// adds it with the org.openjfx.javafxplugin, which picks the JARs matching the operating system.
+javafx {
+    version = javafx_version
+    modules = [
+        "javafx.base",
+        "javafx.graphics",
+        "javafx.controls",
+        "javafx.swing"
+    ]
+    configuration = "compileOnly"
 }
 
 java {
@@ -60,49 +45,14 @@ java {
     withJavadocJar()
 
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(25)
     }
-}
-
-def forbiddenPaths = [
-    "build/classes/java/main/ch/qos/logback/",
-    "build/classes/java/main/com/intellij/",
-    "build/classes/java/main/com/sun/",
-    "build/classes/java/main/java/",
-    "build/classes/java/main/javax/",
-    "build/classes/java/main/jdk/",
-    "build/classes/java/main/net/jqwik/",
-    "build/classes/java/main/org/apache/",
-    "build/classes/java/main/org/assertj/",
-    "build/classes/java/main/org/eclipse/",
-    "build/classes/java/main/org/jacoco/",
-    "build/classes/java/main/org/json/",
-    "build/classes/java/main/org/junit/",
-    "build/classes/java/main/org/opentest4j/",
-    "build/classes/java/main/sun/",
-    "build/classes/java/main/com/github/javaparser/",
-    "build/classes/java/main/org/gradle/",
-    "build/classes/java/main/worker/org/gradle/"
-]
-
-tasks.register("enforceNoStudentCode") {
-    doLast {
-        forbiddenPaths.forEach { path ->
-            if (file(path).exists()) {
-                throw GradleException("Forbidden file exists: $path")
-            }
-        }
-    }
-}
-
-// Ensure the task runs as part of the build
-tasks.named("check") {
-    dependsOn("enforceNoStudentCode")
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
+            artifactId = "eos"
             from components.java
 
             pom {
@@ -173,9 +123,9 @@ spotless {
     java {
         target {
             fileTree(rootDir) {
-                include (
-                        "src/main/java/de/tum/cit/ase/eos/*.java",
-                        )
+                include(
+                        "src/main/java/de/tum/cit/aet/eos/*.java",
+                )
             }
         }
         importOrderFile "spotless.importorder"

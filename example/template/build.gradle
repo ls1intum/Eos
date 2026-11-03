@@ -1,34 +1,36 @@
-plugins{
+plugins {
     id 'java'
     id 'application'
     id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
-sourceCompatibility = 17
-version = '1.0.0'
+version = '2.0.0'
 compileJava.options.encoding = 'UTF-8'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
 
 repositories {
     mavenCentral()
 }
 
-dependencies {
-}
-
 javafx {
-    version = "17.0.8"
+    version = '27.0.1'
     modules = ['javafx.base', 'javafx.graphics', 'javafx.controls']
 }
 
 application {
-    mainModule = "ExampleApp"
-    mainClass = "de.tum.cit.ase.javafx.exercise.ExampleApp"
+    mainModule = 'ExampleApp'
+    mainClass = 'de.tum.cit.aet.javafx.exercise.ExampleApp'
 }
 
 sourceSets {
     main {
         java {
-            srcDir 'src'
+            srcDirs = ['src']
         }
     }
     test {

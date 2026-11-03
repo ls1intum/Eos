@@ -30,7 +30,7 @@ jobs:
     container: ghcr.io/ls1intum/eos:${{ needs.build.outputs.image_tag }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Copy solution to example/tests/assignment
         run: |
@@ -48,7 +48,7 @@ jobs:
     container: ghcr.io/ls1intum/eos:${{ needs.build.outputs.image_tag }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Copy template to example/tests/assignment
         run: |

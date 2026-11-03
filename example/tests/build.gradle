@@ -1,13 +1,25 @@
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.testing.Test
+import org.gradle.process.CommandLineArgumentProvider
+
 plugins {
     id 'java'
-    id 'application'
     id 'org.openjfx.javafxplugin' version '0.1.0'
+    // Weaves the Ares 2 aspects into the student code
+    id 'io.freefair.aspectj.post-compile-weaving' version '9.8.3'
 }
 
-sourceCompatibility = 17
-version = '1.0.0'
+version = '2.0.0'
 compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
 
 repositories {
     mavenLocal()
@@ -15,22 +27,52 @@ repositories {
 }
 
 ext {
-    junitJupiterVersion = '5.10.2'
+    eosVersion = '2.0.0'
+    // Has to match the Ares version Eos is built against
+    aresVersion = '2.2.1'
+    aspectjVersion = '1.9.25.1'
+}
+
+configurations {
+    // transitive = false: each configuration resolves to exactly one JAR, which is used by file path below
+    aresAgent {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+    aresAspectjRuntime {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
+    aresAspectPath {
+        canBeConsumed = false
+        canBeResolved = true
+        transitive = false
+    }
 }
 
 dependencies {
-    testImplementation 'de.tum.cit.ase:eos:1.0.0'
+    testImplementation "de.tum.cit.aet:eos:${eosVersion}"
 
-    implementation 'org.apache.commons:commons-lang3:3.17.0'
+    aresAgent "de.tum.cit.ase:ares:${aresVersion}:agent"
+    aresAspectjRuntime "org.aspectj:aspectjrt:${aspectjVersion}"
+    testImplementation "de.tum.cit.ase:ares:${aresVersion}"
+    // Puts Ares on the aspect path of ajc, otherwise nothing is woven
+    aspect "de.tum.cit.ase:ares:${aresVersion}"
+    implementation "org.aspectj:aspectjrt:${aspectjVersion}"
+    aresAspectPath "de.tum.cit.ase:ares:${aresVersion}"
+
+    implementation 'org.apache.commons:commons-lang3:3.21.0'
 }
 
 javafx {
-    version = "17.0.8"
-    modules = ['javafx.base', 'javafx.graphics', 'javafx.controls']
+    version = '27.0.1'
+    // javafx.swing is required by Eos to save screenshots
+    modules = ['javafx.base', 'javafx.graphics', 'javafx.controls', 'javafx.swing']
 }
 
-def assignmentSrcDir = "assignment/src"
-def studentOutputDir = sourceSets.main.java.destinationDirectory.get()
+def assignmentSrcDir = 'assignment/src'
 
 sourceSets {
     test {
@@ -42,7 +84,6 @@ sourceSets {
         }
     }
 
-
     main {
         java {
             srcDirs = [assignmentSrcDir]
@@ -53,63 +94,100 @@ sourceSets {
     }
 }
 
-application {
-    mainModule = "ExampleApp"
-    mainClass = "de.tum.cit.ase.javafx.exercise.ExampleApp"
+// Only look for aspects in the Ares JAR instead of in all of its dependencies
+tasks.named('compileJava') {
+    ajc.options.aspectpath.setFrom(configurations.aresAspectPath)
 }
 
-def forbiddenPackageFolders = [
-        "$studentOutputDir/ch/qos/logback/",
-        "$studentOutputDir/com/github/javaparser/",
-        "$studentOutputDir/com/intellij/",
-        "$studentOutputDir/com/sun/",
-        "$studentOutputDir/de/tum/in/test/api/",
-        "$studentOutputDir/java/",
-        "$studentOutputDir/javax/",
-        "$studentOutputDir/jdk/",
-        "$studentOutputDir/net/jqwik/",
-        "$studentOutputDir/org/apache/",
-        "$studentOutputDir/org/assertj/",
-        "$studentOutputDir/org/eclipse/",
-        "$studentOutputDir/org/gradle/",
-        "$studentOutputDir/org/jacoco/",
-        "$studentOutputDir/org/json/",
-        "$studentOutputDir/org/junit/",
-        "$studentOutputDir/org/opentest4j/",
-        "$studentOutputDir/sun/",
-        "$studentOutputDir/worker/org/gradle/",
-        "$studentOutputDir/com/sun/glass/ui/",
-        "$studentOutputDir/com/sun/javafx/",
-        "$studentOutputDir/com/sun/prism/",
-        "$studentOutputDir/java/awt/",
-        "$studentOutputDir/javafx/",
-        "$studentOutputDir/org/testfx/",
-        "$studentOutputDir/sun/awt/"
-]
+// The test classes are trusted and need no weaving
+tasks.named('compileTestJava') {
+    ajc.enabled = false
+}
+
+abstract class AresJvmArguments implements CommandLineArgumentProvider {
+    @InputFiles
+    @PathSensitive(PathSensitivity.NONE)
+    abstract ConfigurableFileCollection getAgentJar()
+
+    @InputFiles
+    @PathSensitive(PathSensitivity.NONE)
+    abstract ConfigurableFileCollection getAspectjRuntimeJar()
+
+    @Override
+    Iterable<String> asArguments() {
+        [
+                "-javaagent:${agentJar.singleFile.absolutePath}".toString(),
+                "-Xbootclasspath/a:${aspectjRuntimeJar.singleFile.absolutePath}".toString(),
+                '--add-exports', 'java.base/java.lang=ALL-UNNAMED',
+                '--add-exports', 'java.base/jdk.internal.misc=ALL-UNNAMED',
+                '--add-opens', 'java.base/java.io=ALL-UNNAMED',
+                '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+                '--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED',
+                '--add-opens', 'java.base/java.net=ALL-UNNAMED',
+                '--add-opens', 'java.base/java.nio=ALL-UNNAMED',
+                '--add-opens', 'java.base/java.nio.channels=ALL-UNNAMED',
+                '--add-opens', 'java.base/java.util=ALL-UNNAMED',
+                '--add-opens', 'java.base/java.util.concurrent=ALL-UNNAMED',
+                '--add-opens', 'java.base/java.util.concurrent.atomic=ALL-UNNAMED',
+                '--add-opens', 'java.base/java.util.concurrent.locks=ALL-UNNAMED',
+                '--add-opens', 'java.base/jdk.internal.misc=ALL-UNNAMED',
+                '--add-opens', 'java.base/sun.net.www.protocol.http=ALL-UNNAMED',
+                '--add-opens', 'java.base/sun.net.www.protocol.https=ALL-UNNAMED',
+                '--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED',
+                '--add-opens', 'jdk.unsupported/sun.misc=ALL-UNNAMED'
+        ]
+    }
+}
+
+def aresJvmArguments = objects.newInstance(AresJvmArguments)
+aresJvmArguments.agentJar.from(configurations.aresAgent)
+aresJvmArguments.aspectjRuntimeJar.from(configurations.aresAspectjRuntime)
+
+tasks.withType(Test).configureEach {
+    defaultCharacterEncoding = 'UTF-8'
+    testLogging.showStandardStreams = true
+    useJUnitPlatform()
+    jvmArgumentProviders.add(aresJvmArguments)
+}
 
 test {
-    doFirst {
-        for (String packageFolder in forbiddenPackageFolders) {
-            assert !file(packageFolder).exists(): "$packageFolder must not exist within the submission."
-        }
-    }
-    defaultCharacterEncoding = 'UTF-8'
-    testLogging.showStandardStreams = true
-    useJUnitPlatform()
-
-    systemProperty "glass.platform", "Monocle"
-    systemProperty "monocle.platform", "Headless"
-    systemProperty "prism.order", "sw"
-    systemProperty "prism.text", "t2k"
+    // Headless platform shipped with JavaFX (no Monocle required)
+    systemProperty 'glass.platform', 'Headless'
+    systemProperty 'prism.order', 'sw'
 }
 
+// Runs the tests with the native windowing system, so the interaction can be watched (local verification only)
 tasks.register('testLocally', Test) {
-    doFirst {
-        for (String packageFolder in forbiddenPackageFolders) {
-            assert !file(packageFolder).exists(): "$packageFolder must not exist within the submission."
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+}
+
+// Ares reserved-package build boundary, version 2 (copied from the Ares JAR)
+apply from: 'gradle/AresReservedPackages.gradle'
+
+// Student classes must also not shadow the packages of Eos and the libraries it trusts
+def eosReservedPackagePrefixes = ['de/tum/cit/aet/eos/', 'javafx/', 'org/testfx/', 'org/junit/', 'org/hamcrest/', 'org/assertj/']
+
+tasks.register('verifyEosReservedPackages') {
+    dependsOn tasks.named('classes')
+    def studentClassesDirs = sourceSets.main.output.classesDirs
+    def reservedPrefixes = eosReservedPackagePrefixes
+    inputs.files(studentClassesDirs).withPropertyName('studentClasses')
+    doLast {
+        def forbidden = []
+        studentClassesDirs.files.findAll { it.isDirectory() }.each { root ->
+            root.eachFileRecurse { candidate ->
+                def relative = root.toPath().relativize(candidate.toPath()).toString().replace(File.separator, '/')
+                if (candidate.isFile() && reservedPrefixes.any { relative.startsWith(it) }) {
+                    forbidden << relative
+                }
+            }
+        }
+        if (!forbidden.isEmpty()) {
+            throw new GradleException("Student output must not use the reserved packages: ${forbidden.sort()}")
         }
     }
-    defaultCharacterEncoding = 'UTF-8'
-    testLogging.showStandardStreams = true
-    useJUnitPlatform()
 }
+
+tasks.named('check') { dependsOn tasks.named('verifyEosReservedPackages') }
+tasks.withType(Test).configureEach { dependsOn tasks.named('verifyEosReservedPackages') }

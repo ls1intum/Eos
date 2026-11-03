@@ -1,0 +1,15 @@
+thisPolicyFileCompliesToThePolicyVersion: 1
+regardingTheSupervisedCode:
+  theFollowingProgrammingLanguageConfigurationIsUsed: JAVA_USING_GRADLE_ARCHUNIT_AND_ASPECTJ
+  theSupervisedCodeUsesTheFollowingPackage: "de.tum.cit.aet.javafx.exercise"
+  theMainClassInsideThisPackageIs: "ExampleApp"
+  theFollowingClassesAreTestClasses:
+    - "de.tum.cit.aet.javafx.exercise.ExampleAppTest"
+  theFollowingResourceAccessesArePermitted:
+    regardingFileSystemInteractions: [ ]
+    regardingNetworkConnections: [ ]
+    regardingCommandExecutions: [ ]
+    regardingThreadCreations: [ ]
+    regardingPackageImports:
+      - importTheFollowingPackage: "javafx"
+    regardingTimeouts: [ ]

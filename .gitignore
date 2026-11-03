@@ -34,3 +34,6 @@ replay_pid*
 
 ### Mac OS ###
 .DS_Store
+
+### Include gradle-wrapper
+!gradle/wrapper/gradle-wrapper.jar

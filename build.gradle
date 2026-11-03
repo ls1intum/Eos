@@ -1,7 +1,13 @@
+buildscript {
+    configurations.classpath {
+        // JReleaser needs JGit 5.x, but Spotless pulls in JGit 7, which removed classes JReleaser uses for signing
+        resolutionStrategy.force "org.eclipse.jgit:org.eclipse.jgit:5.13.5.202508271544-r"
+    }
+}
+
 plugins {
     id "java-library"
     id "maven-publish"
-    id "signing"
     id "com.diffplug.spotless" version "8.11.0"
     id "org.jreleaser" version "1.27.0"
     id "org.openjfx.javafxplugin" version "0.1.0"
@@ -99,8 +105,10 @@ jreleaser {
     }
 
     signing {
-        active = "ALWAYS"
-        armored = true
+        pgp {
+            active = "ALWAYS"
+            armored = true
+        }
     }
 
     deploy {
